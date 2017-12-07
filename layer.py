@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, subprocess, time, logging, random
+import os, subprocess, time, logging, random, wikipedia
 from threading import Thread
 
 from yowsup.layers.interface                           import YowInterfaceLayer                 #Reply to the message
@@ -185,7 +185,7 @@ class EchoLayer(YowInterfaceLayer):
             print(answer)
             
         elif comando == 'list':
-            answer = "Los comandos disponibles son: \n.hola\n.list\n.perfil\n.cookie\n.calc\n.gracias\n.reco\n.aquesi\n.hora\n.ping"
+            answer = "Los comandos disponibles son: \n.hola\n.list\n.perfil\n.cookie\n.calc\n.gracias\n.wiki\n.reco\n.aquesi\n.hora\n.ping"
             self.toLower(textmsg(answer, to = recipient ))
             print(answer)
             
@@ -355,7 +355,18 @@ class EchoLayer(YowInterfaceLayer):
             answer = random.choice(respuestas)
             self.toLower(textmsg(answer, to=recipient))
             print(answer)
-
+        elif comando == 'wiki':
+            subcomando = ''
+            i += 1
+            while i < len(message):
+                subcomando = subcomando + message[i].lower()
+                i += 1
+            if subcomando != '':
+                answer = wikipedia.summary(subcomando)
+            else:
+                answer = '⛔ Introduzca el término de búsqueda'
+            self.toLower(textmsg(answer, to=recipient))
+            print(answer)
         else:
             answer = '⛔ Comando inválido. Para ver la lista de comandos, utilice el comando *.list*'
             self.toLower(textmsg(answer, to = recipient ))
