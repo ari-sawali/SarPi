@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, subprocess, time, logging, random, wikipedia
+import imgsearch as img
 from threading import Thread
 
 from yowsup.layers.interface                           import YowInterfaceLayer                 #Reply to the message
@@ -142,10 +143,10 @@ class EchoLayer(YowInterfaceLayer):
         perfiles.write(remitente+'\n'+nombre.replace('\n', ' ')+'\nEstado vacío\n3\n👥\n')
         perfiles.close()
 
-    '''@ProtocolEntityCallback("receipt")
+    @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):
         print(entity.ack())
-        self.toLower(entity.ack())'''
+        self.toLower(entity.ack())
       
       
     def onTextMessage(self,messageProtocolEntity):
@@ -157,6 +158,7 @@ class EchoLayer(YowInterfaceLayer):
         answer     = '⚠ Se ha producido un error, contacte con el administrador'
         comando    = ''
         i = 1
+        wikipedia.set_lang("es")
              
         if remitente is None:
             remitente = recipient
@@ -362,11 +364,31 @@ class EchoLayer(YowInterfaceLayer):
                 subcomando = subcomando + message[i].lower()
                 i += 1
             if subcomando != '':
-                answer = wikipedia.summary(subcomando)
+                try:
+                    answer = wikipedia.summary(subcomando, sentences = 5)
+                except wikipedia.exceptions.DisambiguationError as e:
+                    answer = str(e.options)
+                except wikipedia.exceptions.HTTPTimeoutError:
+                    answer = '🔌 No se ha podido contactar con los servidores de Wikipedia.'
+                except wikipedia.exceptions.PageError:
+                    answer = '🔎 No se ha encontrado ningún resultado.'
             else:
-                answer = '⛔ Introduzca el término de búsqueda'
+                answer = '⛔ Introduzca el término de búsqueda.'
             self.toLower(textmsg(answer, to=recipient))
             print(answer)
+        elif comando == 'img':
+            subcomando = ''
+            i += 1
+            while i < len(message):
+                subcomando = subcomando + message[i].lower()
+                i += 1
+            if subcomando != '':
+                imagen = img.search(subcomando)
+                answer = '📸 ¡Enviando imagen! Por favor, espere.'
+                self.toLower(textmsg(answer, to=recipient))
+                self.image_send(recipient, imagen, subcomando.title())
+            else:
+                answer = '⛔ Introduzca el término de búsqueda.'
         else:
             answer = '⛔ Comando inválido. Para ver la lista de comandos, utilice el comando *.list*'
             self.toLower(textmsg(answer, to = recipient ))
