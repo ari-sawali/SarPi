@@ -383,10 +383,14 @@ class EchoLayer(YowInterfaceLayer):
                 subcomando = subcomando + message[i].lower()
                 i += 1
             if subcomando != '':
-                imagen = img.search(subcomando)
                 answer = '📸 ¡Enviando imagen! Por favor, espere.'
                 self.toLower(textmsg(answer, to=recipient))
-                self.image_send(recipient, imagen, subcomando.title())
+                imagen = img.search(subcomando)
+                if imagen[0] == '⚠':
+                    answer = imagen
+                    self.toLower(textmsg(answer, to=recipient))
+                else:
+                    self.image_send(recipient, imagen, subcomando.title())
             else:
                 answer = '⛔ Introduzca el término de búsqueda.'
         else:

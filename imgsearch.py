@@ -3,6 +3,7 @@ import re;
 import json;
 import pprint;
 import time;
+import random
 
 import urllib.request
 
@@ -11,9 +12,12 @@ def search(keywords):
     file_name = 'imagen.'
     extension = url.split('.')
     extension = extension[len(extension)-1]
-    with urllib.request.urlopen(url) as response, open(file_name+extension, 'wb') as out_file:
-        data = response.read()  # a `bytes` object
-        out_file.write(data)
+    try:
+        with urllib.request.urlopen(url) as response, open(file_name+extension, 'wb') as out_file:
+            data = response.read()  # a `bytes` object
+            out_file.write(data)
+    except urllib.error.HTTPError as e:
+        return('⚠ Error al obtener la imagen:\n'+str(e))
     print(file_name+extension)
     return (file_name+extension)
 
@@ -52,17 +56,20 @@ def getURL(keywords, max_results=1):
 
     res = requests.get(requestUrl, headers=headers, params=params);
     data = json.loads(res.text);
-    return printJson(data["results"]);
+    #return printJson(data["results"]);
+    images = data["results"]
+    image = random.choice(images)["image"]
+    return image
     '''if "next" not in data:
         exit(0);
     requestUrl = url + data["next"];'''
 
 
-def printJson(objs):
+'''def printJson(objs):
     for obj in objs:
         #print ("Width {0}, Height {1}".format(obj["width"], obj["height"]))
         #print ("Thumbnail {0}".format(obj["thumbnail"]))
         #print ("Url {0}".format(obj["url"]))
         #print ("Title {0}".format(obj["title"].encode('utf-8')))
         return (obj["image"])
-        #print ("__________")
+        #print ("__________")'''
