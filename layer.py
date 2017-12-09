@@ -16,27 +16,38 @@ from yowsup.layers.protocol_media.mediauploader        import MediaUploader
 
 name = "SarPI"
 print("Bienvenido, bot en funcionamiento")
+lastCommandTime = 0 #Don't touch this
+online = False #Don't touch this
+
 
 class EchoLayer(YowInterfaceLayer):
     @ProtocolEntityCallback("message")
     def onMessage(self, messageProtocolEntity):
         if messageProtocolEntity.getType() == 'text':
-            self.toLower(messageProtocolEntity.ack()) #Set received (double v)
-            time.sleep(0.5)
-            self.toLower(PresenceProtocolEntity(name = name)) #Set name SarPi
-            self.toLower(AvailablePresenceProtocolEntity()) #Set online
-            time.sleep(0.5)
+            global online
+            global lastCommandTime
+            message = messageProtocolEntity.getBody()
+            print("Mensaje: " + str(message))
+            self.toLower(messageProtocolEntity.ack())  # Set received (double v)
+            if not online:
+                time.sleep(random.uniform(0.5, 1))
+                self.toLower(PresenceProtocolEntity(name = name)) #Set name SarPi
+                self.toLower(AvailablePresenceProtocolEntity()) #Set online
+                online = True
+                random.uniform(0.5, 1.5)
             self.toLower(messageProtocolEntity.ack(True)) #Set read (double v blue)
             time.sleep(0.5)
-            message = messageProtocolEntity.getBody()
-            print("Mensaje: "+str(message))
             if message[0] == '.':
                 self.toLower(OutgoingChatstateProtocolEntity(OutgoingChatstateProtocolEntity.STATE_TYPING, Jid.normalize(messageProtocolEntity.getFrom(False)) )) #Set is writing
-                time.sleep(1)
+                time.sleep(random.uniform(0.5, 1.5))
                 self.toLower(OutgoingChatstateProtocolEntity(OutgoingChatstateProtocolEntity.STATE_PAUSED, Jid.normalize(messageProtocolEntity.getFrom(False)) )) #Set no is writing
                 self.onTextMessage(messageProtocolEntity) #Send the answer
-                time.sleep(2.5)
-            self.toLower(UnavailablePresenceProtocolEntity()) #Set offline
+            if lastCommandTime == 0:
+                lastCommandTime = time.time()
+                backgroundOTmr = Thread(target=self.onlineTimer)
+                backgroundOTmr.start()
+            lastCommandTime = time.time()
+            #self.toLower(UnavailablePresenceProtocolEntity()) #Set offline
             
 ##########Uploads###########
 
@@ -143,6 +154,16 @@ class EchoLayer(YowInterfaceLayer):
         perfiles.write(remitente+'\n'+nombre.replace('\n', ' ')+'\nEstado vacío\n3\n👥\n')
         perfiles.close()
 
+    def onlineTimer(self):
+        while True:
+            global online
+            global lastCommandTime
+            if lastCommandTime+random.randint(10,15) < time.time() and online:
+                self.toLower(UnavailablePresenceProtocolEntity())  # Set offline
+                online = False
+                print('Online off')
+            time.sleep(2)
+
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):
         print(entity.ack())
@@ -187,7 +208,7 @@ class EchoLayer(YowInterfaceLayer):
             print(answer)
             
         elif comando == 'list':
-            answer = "Los comandos disponibles son: \n.hola\n.list\n.perfil\n.cookie\n.calc\n.gracias\n.wiki\n.reco\n.aquesi\n.hora\n.ping"
+            answer = "Los comandos disponibles son: \n.hola\n.list\n.perfil\n.cookie\n.img\n.calc\n.gracias\n.wiki\n.reco\n.aquesi\n.hora\n.ping"
             self.toLower(textmsg(answer, to = recipient ))
             print(answer)
             
@@ -379,7 +400,7 @@ class EchoLayer(YowInterfaceLayer):
         elif comando == 'img':
             subcomando = ''
             i += 1
-            while i < len(message):
+            while i < len(message) and message[i] != '\n':
                 subcomando = subcomando + message[i].lower()
                 i += 1
             if subcomando != '':
