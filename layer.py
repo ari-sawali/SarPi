@@ -151,7 +151,7 @@ class EchoLayer(YowInterfaceLayer):
         
     def crearPerfil(self, remitente, nombre):
         perfiles = open ("perfiles.txt", "a")
-        perfiles.write(remitente+'\n'+nombre.replace('\n', ' ')+'\nEstado vacío\n3\n👥\n')
+        perfiles.write(remitente+'\n'+nombre.replace('\n', ' ')+'\nEstado vacío\n3\n👥\n\n\n')
         perfiles.close()
 
     def onlineTimer(self):
@@ -267,7 +267,11 @@ class EchoLayer(YowInterfaceLayer):
         
         elif comando == 'cookie':
             nombre = ''
+            mencion = 0
             i += 1
+            if i<len(message) and message[i] == '@':
+                mencion = True
+                i += 1
             while i < len(message):
                 nombre = nombre + message[i]
                 i +=1
@@ -280,7 +284,9 @@ class EchoLayer(YowInterfaceLayer):
                 else:
                     answer = '✅ No ha creado un perfil.'
             else:
-                cookiesReceptor = self.buscarLineas(nombre, 1, 2)
+                if mencion:
+                    nombre = nombre + '@s.whatsapp.net'
+                cookiesReceptor = self.buscarLineas(nombre, 1, 2 + mencion)
                 if cookies is None:
                     answer = '✅ No ha creado un perfil.'
                 elif cookiesReceptor is None:
@@ -289,7 +295,7 @@ class EchoLayer(YowInterfaceLayer):
                     cookies = int(cookies)-1
                     cookiesReceptor = int(cookiesReceptor)+1
                     self.buscarReemplazar(remitente, 3, str(cookies))
-                    self.buscarReemplazar(nombre, 2, str(cookiesReceptor))
+                    self.buscarReemplazar(nombre, 2 + mencion, str(cookiesReceptor))
                     answer = 'Se ha transferido una galleta a '+nombre
                 elif int(cookies) == 0:
                     answer = 'No tienes galletas suficientes.'
