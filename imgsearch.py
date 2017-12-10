@@ -12,12 +12,19 @@ def search(keywords):
     file_name = 'imagen.'
     extension = url.split('.')
     extension = extension[len(extension)-1]
+    if not (extension.lower == 'png' or extension.lower() == 'jpg' or extension.lower() == 'jpeg'):
+        print('Buscando otra vez por: GIF o extensión incompatible')
+        return (search(keywords))
     try:
         with urllib.request.urlopen(url) as response, open(file_name+extension, 'wb') as out_file:
             data = response.read()  # a `bytes` object
             out_file.write(data)
     except urllib.error.HTTPError as e:
-        return('⚠ Error al obtener la imagen:\n'+str(e))
+        print('Buscando otra vez por: '+str(e))
+        return(search(keywords))
+    except urllib.error.URLError as e:
+        print('Buscando otra vez por: ' + str(e))
+        return (search(keywords))
     print(file_name+extension)
     return (file_name+extension)
 

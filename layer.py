@@ -33,6 +33,11 @@ class EchoLayer(YowInterfaceLayer):
                 time.sleep(random.uniform(0.5, 1))
                 self.toLower(PresenceProtocolEntity(name = name)) #Set name SarPi
                 self.toLower(AvailablePresenceProtocolEntity()) #Set online
+                if lastCommandTime == 0:
+                    lastCommandTime = time.time()
+                    backgroundOTmr = Thread(target=self.onlineTimer)
+                    backgroundOTmr.start()
+                lastCommandTime = time.time()
                 online = True
                 random.uniform(0.5, 1.5)
             self.toLower(messageProtocolEntity.ack(True)) #Set read (double v blue)
@@ -42,11 +47,6 @@ class EchoLayer(YowInterfaceLayer):
                 time.sleep(random.uniform(0.5, 1.5))
                 self.toLower(OutgoingChatstateProtocolEntity(OutgoingChatstateProtocolEntity.STATE_PAUSED, Jid.normalize(messageProtocolEntity.getFrom(False)) )) #Set no is writing
                 self.onTextMessage(messageProtocolEntity) #Send the answer
-            if lastCommandTime == 0:
-                lastCommandTime = time.time()
-                backgroundOTmr = Thread(target=self.onlineTimer)
-                backgroundOTmr.start()
-            lastCommandTime = time.time()
             #self.toLower(UnavailablePresenceProtocolEntity()) #Set offline
             
 ##########Uploads###########
@@ -407,11 +407,7 @@ class EchoLayer(YowInterfaceLayer):
                 answer = '📸 ¡Enviando imagen! Por favor, espere.'
                 self.toLower(textmsg(answer, to=recipient))
                 imagen = img.search(subcomando)
-                if imagen[0] == '⚠':
-                    answer = imagen
-                    self.toLower(textmsg(answer, to=recipient))
-                else:
-                    self.image_send(recipient, imagen, subcomando.title())
+                self.image_send(recipient, imagen, subcomando.title())
             else:
                 answer = '⛔ Introduzca el término de búsqueda.'
         else:
